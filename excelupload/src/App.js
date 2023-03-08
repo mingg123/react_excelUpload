@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FileUploader } from "react-drag-drop-files";
 import * as XLSX from "xlsx";
 import "./App.css";
 
@@ -14,12 +15,10 @@ function App() {
     return data === "" ? null : data;
   }
 
-  const excelExport = (event) => {
-    const input = event.target;
+  function parseExcelFile(target) {
     const reader = new FileReader();
     reader.onload = () => {
       const fileData = reader.result;
-      console.log("fileData", fileData);
       const wb = XLSX.read(fileData, { type: "binary" });
       wb.SheetNames.forEach((sheetName) => {
         const rowObj = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
@@ -48,14 +47,28 @@ function App() {
         setExcelData(rowObj);
       });
     };
-    reader.readAsBinaryString(input.files[0]);
+    reader.readAsBinaryString(target);
+  }
+  const excelExport = (event) => {
+    const input = event.target;
+    parseExcelFile(input.files[0]);
   };
 
+  const fileTypes = ["JPEG", "PNG", "GIF", "XLSX"];
+
+  const [file, setFile] = useState(null);
+
+  const handleChange = (file) => {
+    setFile(file);
+    parseExcelFile(file);
+  };
   return (
     <div className="App">
       <input type="file" onChange={excelExport} />
-      {excelData.length > 0 && excelData[0].포스키이름}
-      {parseData.toString()}
+      {/* {excelData.length > 0 && excelData[0].포스키이름}
+      {parseData.toString()} */}
+      <FileUploader handleChange={handleChange} name="file" types={fileTypes} />
+      <p>{file ? `File name: ${file.name}` : "no files uploaded yet"}</p>
     </div>
   );
 }
